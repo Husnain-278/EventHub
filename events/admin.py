@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.db.models import Sum
 from .models import Venue, EventType, MenuCategory, MenuItem, Booking, BookingMenu
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 # ==================== Venue Admin ====================
@@ -134,7 +136,20 @@ class BookingAdmin(admin.ModelAdmin):
         updated = queryset.update(status='Pending')
         self.message_user(request, f'{updated} booking(s) marked as pending.')
     mark_as_pending.short_description = 'Mark as pending'
-
+    def save_model(self, request, obj, form, change):
+        # Check if status changed to Active
+        if change:  # Editing existing booking
+            old_obj = Booking.objects.get(pk=obj.pk)
+            if old_obj.status != 'Active' and obj.status == 'Active':
+                # Send email
+                send_mail(
+                    subject='Booking Confirmed!',
+                    message=f'Dear {obj.customer_name},\n\nYour booking for {obj.event_type.name} at {obj.venue.name} on {obj.event_date} has been confirmed!\n\nTotal Cost: ${obj.total_cost}\n\nThank you!',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[obj.customer_email],
+                    fail_silently=False,
+                )
+        super().save_model(request, obj, form, change)
 
 # ==================== Booking Menu Admin ====================
 @admin.register(BookingMenu)

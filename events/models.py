@@ -52,7 +52,8 @@ class Booking(models.Model):
     CHOICES = (
         ('Pending','Pending'),
         ('Active','Active'),
-        ('Rejected', 'Rejected')
+        ('Rejected', 'Rejected'),
+        ('Confirmed', 'Confirmed')
     )
 
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE)

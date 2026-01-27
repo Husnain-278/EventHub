@@ -7,5 +7,6 @@ urlpatterns = [
     path('menu-categories/', MenuCategoryView.as_view()),
     path('menu-items/', MenuItemView.as_view()),
     path('booking/', BookingView.as_view(),),
-    path('booking-menu/', BookingMenuView.as_view())
+    path('booking-menu/', BookingMenuView.as_view()),
+    path('event-stats/', EventHubStatsView.as_view()),
 ]

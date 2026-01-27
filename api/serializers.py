@@ -1,6 +1,8 @@
 from events.models import *
 from rest_framework import serializers
 from django.db import transaction
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 class VenueSerializer(serializers.ModelSerializer):
@@ -83,7 +85,53 @@ class BookingSerializer(serializers.ModelSerializer):
         # 3️⃣ Recalculate costs ONCE
         booking.save()
 
+        # 4️⃣ Send confirmation email
+        self._send_booking_email(booking)
+
         return booking
+
+    def _send_booking_email(self, booking):
+        """Send booking confirmation email to customer"""
+        try:
+            subject = f'Booking Confirmation - {booking.event_type.name} at {booking.venue.name}'
+            message = f"""
+Dear {booking.customer_name},
+
+Thank you for booking with EventHub!
+
+Your booking details:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Venue: {booking.venue.name}
+Event Type: {booking.event_type.name}
+Date: {booking.event_date}
+Time: {booking.event_time}
+Number of Guests: {booking.guests_count}
+
+Cost Breakdown:
+- Chairs: ${booking.chairs_cost}
+- Food: ${booking.food_cost}
+- Event: ${booking.event_cost}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Total Cost: ${booking.total_cost}
+
+Status: {booking.status}
+
+We will notify you once your booking is confirmed.
+
+Best regards,
+EventHub Team
+            """
+            
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[booking.customer_email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            # Log the error but don't fail the booking
+            print(f"Failed to send email: {str(e)}")
 
 
 
@@ -91,3 +139,13 @@ class BookingMenuSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookingMenu
         fields = '__all__'
+
+
+
+
+class EventHubStatsSerializer(serializers.Serializer):
+    """Serializer to display EventHub statistics"""
+    total_venues = serializers.IntegerField(read_only=True)
+    total_event_types = serializers.IntegerField(read_only=True)
+    total_menu_items = serializers.IntegerField(read_only=True)
+    confirmed_bookings = serializers.IntegerField(read_only=True)

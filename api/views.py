@@ -1,5 +1,7 @@
 from rest_framework import generics
 from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from .serializers import *
 from events.models import *
 
@@ -46,3 +48,18 @@ class BookingMenuView(generics.ListAPIView):
     serializer_class = BookingMenuSerializer
     def get_queryset(self):
       return BookingMenu.objects.select_related('booking', 'menu_item')
+    
+
+class EventHubStatsView(APIView):
+    """View to get EventHub statistics"""
+    
+    def get(self, request):
+        stats = {
+            'total_venues': Venue.objects.count(),
+            'total_event_types': EventType.objects.count(),
+            'total_menu_items': MenuItem.objects.count(),
+            'confirmed_bookings': Booking.objects.filter(status='Confirmed').count(),
+        }
+        
+        serializer = EventHubStatsSerializer(stats)
+        return Response(serializer.data)
