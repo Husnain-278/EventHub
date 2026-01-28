@@ -82,14 +82,16 @@ WSGI_APPLICATION = 'EventHub.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-import dj_database_url
 
+
+
+import dj_database_url
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=f"postgresql://{config('DB_USER')}:{config('DB_PASSWORD')}@{config('DB_HOST', default='localhost')}:{config('DB_PORT', default='5432')}/{config('DB_NAME')}",
+        default=config('DATABASE_URL'),
         conn_max_age=600,
-        ssl_require=not config('DEBUG', default=True, cast=bool)
+        ssl_require=True
     )
 }
 
