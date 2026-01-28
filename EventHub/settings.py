@@ -82,15 +82,13 @@ WSGI_APPLICATION = 'EventHub.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-
-
-
 import dj_database_url
 
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
         conn_max_age=600,
+        conn_health_checks=True,
         ssl_require=True
     )
 }
@@ -132,6 +130,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
