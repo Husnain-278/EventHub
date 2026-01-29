@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     #3rd party apps
     'rest_framework',
     "corsheaders",
+    'cloudinary_storage',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -134,10 +136,17 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Cloudinary Configuration
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
+    'API_KEY': config('CLOUDINARY_API_KEY', default=''),
+    'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
+}
+
 # WhiteNoise Storage for static files
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage" if not DEBUG else "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
