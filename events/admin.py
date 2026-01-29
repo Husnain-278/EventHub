@@ -141,14 +141,18 @@ class BookingAdmin(admin.ModelAdmin):
         if change:  # Editing existing booking
             old_obj = Booking.objects.get(pk=obj.pk)
             if old_obj.status != 'Active' and obj.status == 'Active':
-                # Send email
-                send_mail(
-                    subject='Booking Confirmed!',
-                    message=f'Dear {obj.customer_name},\n\nYour booking for {obj.event_type.name} at {obj.venue.name} on {obj.event_date} has been confirmed!\n\nTotal Cost: ${obj.total_cost}\n\nThank you!',
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[obj.customer_email],
-                    fail_silently=False,
-                )
+                # Send email (fail silently to prevent crashes)
+                try:
+                    send_mail(
+                        subject='Booking Confirmed!',
+                        message=f'Dear {obj.customer_name},\n\nYour booking for {obj.event_type.name} at {obj.venue.name} on {obj.event_date} has been confirmed!\n\nTotal Cost: ${obj.total_cost}\n\nThank you!',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[obj.customer_email],
+                        fail_silently=True,
+                    )
+                except Exception as e:
+                    # Log error but don't crash
+                    self.message_user(request, f'Booking saved but email failed: {str(e)}', level='warning')
         super().save_model(request, obj, form, change)
 
 # ==================== Booking Menu Admin ====================
